@@ -7,17 +7,19 @@ import numpy as np
 import scipy.signal
 
 
-def calc_temp(trajectory, casings=None, set_inputs=None, operation='drilling', time_steps=210, smooth=True):
+def calc_temp(trajectory, casings=None, set_inputs=None, operation='drilling', time_steps=210, smooth=True,
+              cells_no=None):
     """
     Function to calculate the well temperature distribution during a specific operation at a certain time.
 
     Arguments:
-        trajectory (obj): wellbore trajectory object
+        trajectory: (obj) wellbore trajectory object
         casings: list of dictionaries with casings characteristics (od, id and depth)
         set_inputs: dictionary with parameters to set.
         operation: define operation type. ('drilling', 'circulating')
         time_steps: number of time steps to run calculations.
         smooth: smooth the temperature profiles.
+        cells_no: (int) number of cells. If None -> keep same number of cells than trajectory
 
     Returns:
         Well temperature distribution object
@@ -35,7 +37,7 @@ def calc_temp(trajectory, casings=None, set_inputs=None, operation='drilling', t
     md_initial = tdata['water_depth']
     md_final = trajectory.md[-1]
 
-    well = set_well(tdata, trajectory, operation)
+    well = set_well(tdata, trajectory, operation, cells_no)
 
     prev_point = md_initial
     time = []

@@ -4,19 +4,25 @@ from math import pi, log
 from copy import deepcopy
 
 
-def create_depth_cells(trajectory):
-    md_new = list(np.linspace(0, max(trajectory.md), num=100))
-    tvd_new, inclination, azimuth = [], [], []
-    for i in md_new:
-        tvd_new.append(np.interp(i, trajectory.md, trajectory.tvd))
-        inclination.append(np.interp(i, trajectory.md, trajectory.inclination))
-        azimuth.append(np.interp(i, trajectory.md, trajectory.azimuth))
-    depth_step = md_new[1]
+def create_depth_cells(trajectory, cells_no=None):
 
-    return md_new, tvd_new, depth_step, inclination, azimuth
+    if cells_no is None:
+        md_new = list(np.linspace(0, max(trajectory.md), num=100))
+        tvd_new, inclination, azimuth = [], [], []
+        for i in md_new:
+            tvd_new.append(np.interp(i, trajectory.md, trajectory.tvd))
+            inclination.append(np.interp(i, trajectory.md, trajectory.inclination))
+            azimuth.append(np.interp(i, trajectory.md, trajectory.azimuth))
+        depth_step = md_new[1]
+
+        return md_new, tvd_new, depth_step, inclination, azimuth
+
+    else:
+        depth_step = trajectory.md[1] - trajectory.md[0]
+        return trajectory.md, trajectory.tvd, depth_step, trajectory.inclination, trajectory.azimuth
 
 
-def set_well(temp_dict, trajectory, operation):
+def set_well(temp_dict, trajectory, operation, cells_no=None):
     q_conv = 60  # from m^3/min to m^3/h
     an_conv = 1 / 1500  # from in^2 to m^2
     diameter_conv = 0.0254  # from in to m
@@ -26,7 +32,8 @@ def set_well(temp_dict, trajectory, operation):
 
             # DIMENSIONS
             self.trajectory = trajectory
-            self.md, self.tvd, self.depth_step, self.inclination, self.azimuth = create_depth_cells(trajectory)
+            self.md, self.tvd, self.depth_step, self.inclination, self.azimuth = create_depth_cells(trajectory,
+                                                                                                    cells_no)
             self.deltaz = self.depth_step
             self.cells_no = self.zstep = len(self.md)
             self.casings = temp_dict["casings"]  # casings array
