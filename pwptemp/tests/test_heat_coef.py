@@ -1,7 +1,7 @@
 from unittest import TestCase
 import well_profile as wp
 
-trajectory = wp.load('trajectory1.xlsx')
+trajectory = wp.load('trajectory1.xlsx', equidistant=True)
 
 
 class TestHC(TestCase):

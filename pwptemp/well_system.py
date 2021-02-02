@@ -6,8 +6,8 @@ from copy import deepcopy
 
 def create_depth_cells(trajectory, cells_no=None):
 
-    if cells_no is None:
-        md_new = list(np.linspace(0, max(trajectory.md), num=100))
+    if cells_no is not None:
+        md_new = list(np.linspace(0, max(trajectory.md), num=cells_no))
         tvd_new, inclination, azimuth = [], [], []
         for i in md_new:
             tvd_new.append(np.interp(i, trajectory.md, trajectory.tvd))

@@ -85,11 +85,11 @@ def calc_temp(trajectory, casings=None, set_inputs=None, operation='drilling', t
                 if time_n < sum(time[:y+1])*3600:
                     d = depths[y]
                     if len(well.rop_list) > 1:
-                        rop = well.rop_list[y]/3600
+                        rop = well.rop_list[y]
                     t = sum(time[:y+1])*3600
                     break
 
-            bit_depth = d - rop * (t - time_n)
+            bit_depth = d - rop/3600 * (t - time_n)
             bit_position = round(bit_depth / well.depth_step)
             td = bit_position
 
