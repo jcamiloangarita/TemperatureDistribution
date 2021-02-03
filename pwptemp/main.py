@@ -39,48 +39,50 @@ def calc_temp(trajectory, casings=None, set_inputs=None, operation='drilling', t
 
     well = set_well(tdata, trajectory, operation, cells_no)
 
-    prev_point = md_initial
     time = []
-    cummulative_time = []
+    rop_steps = []
     depths = sorted([x[2] for x in well.casings])
-    for x in range(len(depths)):
-        distance = depths[x] - prev_point
-        time_section = distance/well.rop_list[x]
-        time.append(time_section)
-        cummulative_time.append(sum(time))
-        prev_point = depths[x]
-    time.append((md_final-prev_point)/well.rop_list[-1])
-    cummulative_time.append(sum(time))
-    depths = list(depths) + [md_final]
-    if depths[0] == 0:
-        depths = depths[1:]
-        time = time[1:]
-        cummulative_time = cummulative_time[1:]
-
     if operation == 'drilling':
+
+        prev_point = md_initial
+
+        cummulative_time = []
+
+        for x in range(len(depths)):
+            distance = depths[x] - prev_point
+            time_section = distance / well.rop_list[x]
+            time.append(time_section)
+            cummulative_time.append(sum(time))
+            prev_point = depths[x]
+        time.append((md_final - prev_point) / well.rop_list[-1])
+        cummulative_time.append(sum(time))
+        depths = list(depths) + [md_final]
+        if depths[0] == 0:
+            depths = depths[1:]
+            time = time[1:]
+            cummulative_time = cummulative_time[1:]
+
         tcirc = sum(time) * 3600  # drilling time, s
+        for x in cummulative_time:
+            rop_steps.append(round(x * 3600 / tcirc / time_steps))
     else:
         tcirc = tdata['time'] * 3600    # circulating time, s
-    time_steps_no = time_steps  # dividing time in 120 steps
-    time_step = tcirc / time_steps_no  # seconds per time step
 
-    rop_steps = []
-    for x in cummulative_time:
-        rop_steps.append(round(x * 3600 / time_step))
+    time_step = tcirc / time_steps  # seconds per time step
 
     log_temp_values(well, initial=True)     # log initial temperature distribution
     well.delta_time = time_step
     time_n = time_step
     well.op = operation
 
-    d = depths[0]
-    rop = well.rop_list[0]
-    t = time[0] * 3600
     td = well.cells_no-1
 
-    for x in range(time_steps_no):
+    for x in range(time_steps):
 
         if well.op == 'drilling':
+            d = depths[0]
+            rop = well.rop_list[0]
+            t = time[0] * 3600
             for y in range(len(time)):
                 if time_n < sum(time[:y+1])*3600:
                     d = depths[y]
@@ -93,7 +95,7 @@ def calc_temp(trajectory, casings=None, set_inputs=None, operation='drilling', t
             bit_position = round(bit_depth / well.depth_step)
             td = bit_position
 
-        if time_steps_no > 1:
+        if time_steps > 1:
 
             if td > 0:
                 well = calc_temperature_distribution(well, time_step, td)
@@ -102,17 +104,18 @@ def calc_temp(trajectory, casings=None, set_inputs=None, operation='drilling', t
                 log_temp_values(well, time_n)
             well.time = time_n / 3600
 
-            if x in rop_steps:
-                well.temperatures['in_pipe'] = well.temp_fm
-                well.temperatures['pipe'] = well.temp_fm
-                well.temperatures['annulus'] = well.temp_fm
-                well.temperatures['casing'] = well.temp_fm
-                well.temperatures['riser'] = well.temp_fm
-                well.temperatures['sr'] = well.temp_fm
-                for i in well.sections:
-                    for j in range(well.cells_no):
-                        i[j]['temp'] = well.temp_fm[j]
-                        i[j]['temp_fm'] = well.temp_fm[j]
+            if well.op == 'drilling':
+                if x in rop_steps:
+                    well.temperatures['in_pipe'] = well.temp_fm
+                    well.temperatures['pipe'] = well.temp_fm
+                    well.temperatures['annulus'] = well.temp_fm
+                    well.temperatures['casing'] = well.temp_fm
+                    well.temperatures['riser'] = well.temp_fm
+                    well.temperatures['sr'] = well.temp_fm
+                    for i in well.sections:
+                        for j in range(well.cells_no):
+                            i[j]['temp'] = well.temp_fm[j]
+                            i[j]['temp_fm'] = well.temp_fm[j]
 
         time_n += time_step
 
