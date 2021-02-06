@@ -1,7 +1,8 @@
 from unittest import TestCase
 import well_profile as wp
 
-trajectory = wp.load('trajectory1.xlsx', equidistant=True)
+trajectory = wp.load(r'https://github.com/pro-well-plan/pwptemp/raw/master/pwptemp/tests/trajectory1.xlsx',
+                     equidistant=True)
 
 
 class TestLinearSystem(TestCase):
