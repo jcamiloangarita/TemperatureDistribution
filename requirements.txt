@@ -3,3 +3,4 @@ plotly
 torque_drag
 scipy
 well_profile
+xlrd==1.2.0
