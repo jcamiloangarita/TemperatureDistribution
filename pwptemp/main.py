@@ -102,20 +102,21 @@ def calc_temp(trajectory, casings=None, set_inputs=None, operation='drilling', t
                 well = define_temperatures(well, td)
 
                 log_temp_values(well, time_n)
-            well.time = time_n / 3600
 
-            if well.op == 'drilling':
-                if x in rop_steps:
-                    well.temperatures['in_pipe'] = well.temp_fm
-                    well.temperatures['pipe'] = well.temp_fm
-                    well.temperatures['annulus'] = well.temp_fm
-                    well.temperatures['casing'] = well.temp_fm
-                    well.temperatures['riser'] = well.temp_fm
-                    well.temperatures['sr'] = well.temp_fm
-                    for i in well.sections:
-                        for j in range(well.cells_no):
-                            i[j]['temp'] = well.temp_fm[j]
-                            i[j]['temp_fm'] = well.temp_fm[j]
+                if well.op == 'drilling':
+                    if x in range(len(rop_steps)):
+                        well.temperatures['in_pipe'] = well.temp_fm
+                        well.temperatures['pipe'] = well.temp_fm
+                        well.temperatures['annulus'] = well.temp_fm
+                        well.temperatures['casing'] = well.temp_fm
+                        well.temperatures['riser'] = well.temp_fm
+                        well.temperatures['sr'] = well.temp_fm
+                        for i in well.sections:
+                            for j in range(well.cells_no):
+                                i[j]['temp'] = well.temp_fm[j]
+                                i[j]['temp_fm'] = well.temp_fm[j]
+
+            well.time = time_n / 3600
 
         time_n += time_step
 
