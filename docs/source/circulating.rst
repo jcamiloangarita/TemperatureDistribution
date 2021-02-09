@@ -1,5 +1,5 @@
-Temperature during Drilling
-===========================
+Temperature during Circulating
+==============================
 
 .. autofunction:: pwptemp.calc_temp
 
@@ -19,12 +19,12 @@ Example
     >>>            {'od': 10, 'id': 9, 'depth': 1500},       # diameter [in] and depth [m]
     >>>            {'od': 8, 'id': 7, 'depth': 2400}]
 
-    >>> rop_list = [50, 45, 40, 35]     # setting respective ROP [m/h] for each section
-
     >>> well = pt.calc_temp(trajectory,     # calculate the well temperature distribution using pwptemp
     >>>                     casings,
-    >>>                     set_inputs={'water_depth': 0, 'temp_inlet': 20, 'rop':rop_list,
-    >>>                     operation='drilling',}
+    >>>                     set_inputs={'water_depth': 0,       # water depth [m]
+    >>>                                 'temp_inlet': 20,       # inlet fluid temperature [°C]
+    >>>                                 'time': 10}             # circulation time [h]
+    >>>                     operation='circulating',
 
     >>> pt.plot_distribution(well).show()
 
@@ -32,23 +32,19 @@ Example
 
 |temp_behavior|
 
-.. |temp_drill| image:: /figures/temp_profile_drill.png
+.. |temp_drill| image:: /figures/temp_profile_circ.png
                     :scale: 85%
 
-.. |temp_behavior| image:: /figures/temp_behavior_drill.png
+.. |temp_behavior| image:: /figures/temp_behavior_circ.png
                     :scale: 85%
-
-.. admonition:: Notice!
-
-    The total time of drilling is calculated based on the ROP's set for the sections. The simulation
-    assumes a break after each section is drilled (here is when casing is run and cemented) so the temperature
-    becomes stable again. i.e. for this particular case, it takes 92.9 hours only *drilling* the whole wellbore.
 
 The table below shows the available inputs that can be set when using the parameter *set_inputs*
 
 +------------------+------------------+
 |       Name       |      Units       |
 +==================+==================+
+|        time      | h                |
++------------------+------------------+
 |    temp_inlet    | °C               |
 +------------------+------------------+
 |   temp_surface   | °C               |

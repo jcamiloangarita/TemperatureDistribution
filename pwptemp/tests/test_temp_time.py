@@ -22,7 +22,6 @@ class TestMain(TestCase):
         self.assertIsInstance(td.tsr, list)
         self.assertIsInstance(td.tfm, list)
 
-
     def test_temp_time_production(self):
         from pwptemp.production import input, main
         tdata = input.data()

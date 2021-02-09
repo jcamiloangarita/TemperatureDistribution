@@ -20,6 +20,7 @@ information about any function included in this package.
 
    installation
    drilling
+   circulating
 
 About Pro Well Plan
 -------------------
