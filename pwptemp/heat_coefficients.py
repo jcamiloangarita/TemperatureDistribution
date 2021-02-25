@@ -34,6 +34,7 @@ def add_heat_coefficients(well, delta_time, bit_position):
     if well.op == 'drilling':
         # heat coefficients at drill bit
         joule = 4.1868  # Joule's constant  [Nm/cal]
+        print(bit_position)
         bit_cell = well.sections[0][bit_position]
         q_bit = (1 / joule) * (1 - well.bit_n) * (well.wob * (well.rop / 3600) + 2 * pi * (well.rpm / 60) * well.tbit) \
             + 0.7 * (well.q / 3600) * (bit_cell['rho'] / (2 * 9.81)) * ((well.q / 3600) / (0.95 * well.an)) ** 2
