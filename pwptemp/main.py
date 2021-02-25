@@ -129,6 +129,8 @@ def calc_temp(trajectory, casings=None, set_inputs=None, operation='drilling', t
     if smooth:
         smooth_results(well)
 
+    additional_points(well)
+
     return well
 
 
@@ -160,7 +162,7 @@ def define_temperatures(well, bit_position):
             else:
                 temp_casing.append(None)
 
-    well.temperatures = {'md': well.md,
+    well.temperatures = {'md': list(well.md),
                          'formation': well.temp_fm,
                          'in_pipe': temp_in_pipe,
                          'pipe': temp_pipe,
@@ -266,3 +268,65 @@ def smooth_results(well):
 
     well.temperatures['in_pipe'] = well.temperatures['in_pipe'][:ref] + list(temp_in_pipe)
     well.temperatures['annulus'] = well.temperatures['annulus'][:ref] + list(temp_annulus)
+
+
+def additional_points(well):
+    if well.water_depth > 0:
+        depths = [point['md'] for point in well.trajectory]
+        seabed_point = False
+        for idx, md in enumerate(depths):
+            if idx > 0:
+                if depths[idx - 1] < md > well.water_depth and seabed_point:
+                    well.temperatures['md'].insert(idx, well.water_depth)
+
+                    well.temperatures['formation'].insert(idx,
+                                                          np.interp(well.water_depth, [depths[idx - 1], md],
+                                                                    [well.temperatures['formation'][idx - 1],
+                                                                     well.temperatures['formation'][idx]]))
+                    well.temperatures['in_pipe'].insert(idx,
+                                                        np.interp(well.water_depth, [depths[idx - 1], md],
+                                                                  [well.temperatures['in_pipe'][idx - 1],
+                                                                   well.temperatures['in_pipe'][idx]]))
+                    well.temperatures['pipe'].insert(idx,
+                                                     np.interp(well.water_depth, [depths[idx - 1], md],
+                                                               [well.temperatures['pipe'][idx - 1],
+                                                                well.temperatures['pipe'][idx]]))
+                    well.temperatures['annulus'].insert(idx,
+                                                        np.interp(well.water_depth, [depths[idx - 1], md],
+                                                                  [well.temperatures['annulus'][idx - 1],
+                                                                   well.temperatures['annulus'][idx]]))
+                    well.temperatures['riser'].insert(idx, well.temperatures['riser'][idx - 1])
+                    well.temperatures['casing'].insert(idx, well.temperatures['casing'][idx])
+                    well.temperatures['sr'].insert(idx,
+                                                   np.interp(well.water_depth, [depths[idx - 1], md],
+                                                             [well.temperatures['sr'][idx - 1],
+                                                              well.temperatures['sr'][idx]]))
+                    seabed_point = True
+
+                reference = well.casings[0][2]
+                if depths[idx - 1] < md > reference != 0:
+                    well.temperatures['md'].insert(idx, reference)
+
+                    well.temperatures['formation'].insert(idx,
+                                                          np.interp(reference, [depths[idx - 1], md],
+                                                                    [well.temperatures['formation'][idx - 1],
+                                                                     well.temperatures['formation'][idx]]))
+                    well.temperatures['in_pipe'].insert(idx,
+                                                        np.interp(reference, [depths[idx - 1], md],
+                                                                  [well.temperatures['in_pipe'][idx - 1],
+                                                                   well.temperatures['in_pipe'][idx]]))
+                    well.temperatures['pipe'].insert(idx,
+                                                     np.interp(reference, [depths[idx - 1], md],
+                                                               [well.temperatures['pipe'][idx - 1],
+                                                                well.temperatures['pipe'][idx]]))
+                    well.temperatures['annulus'].insert(idx,
+                                                        np.interp(reference, [depths[idx - 1], md],
+                                                                  [well.temperatures['annulus'][idx - 1],
+                                                                   well.temperatures['annulus'][idx]]))
+                    well.temperatures['riser'].insert(idx, None)
+                    well.temperatures['casing'].insert(idx, well.temperatures['casing'][idx - 1])
+                    well.temperatures['sr'].insert(idx,
+                                                   np.interp(reference, [depths[idx - 1], md],
+                                                             [well.temperatures['sr'][idx - 1],
+                                                              well.temperatures['sr'][idx]]))
+                    break
