@@ -1,6 +1,5 @@
 numpy
 plotly
-torque_drag
 scipy
-well_profile
-xlrd==1.2.0
+well_profile==0.5.1b1
+torque_drag==0.0.8
