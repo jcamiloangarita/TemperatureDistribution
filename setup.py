@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 setup(
     name='pwptemp',
     packages=['pwptemp'],
-    version='0.3.6b2',
+    version='0.3.6b3',
     license='LGPL v3',
     description='Well Temperature Distribution',
     long_description=long_description,
@@ -21,5 +21,5 @@ setup(
                  'Topic :: Software Development',
                  'Topic :: Software Development :: Libraries',
                  'Topic :: Utilities'],
-    install_requires=['numpy', 'plotly', 'torque_drag', 'scipy']
+    install_requires=['numpy', 'plotly', 'torque_drag', 'scipy', 'well_profile']
 )
