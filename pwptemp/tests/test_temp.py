@@ -5,7 +5,7 @@ import pwptemp.injection as pti
 import well_profile as wp
 
 trajectory = wp.load(r'https://github.com/pro-well-plan/pwptemp/raw/master/pwptemp/tests/trajectory1.xlsx',
-                     equidistant=True)
+                     equidistant=True).trajectory
 
 
 class TestHC(TestCase):
@@ -27,19 +27,7 @@ class TestHC(TestCase):
         self.assertIsInstance(tfm, list)
 
     def test_temp_production(self):
-        t = ptp.temp(trajectory, 2)
-        self.assertIsInstance(t.tft, list)
-        self.assertIsInstance(t.tt, list)
-        self.assertIsInstance(t.ta, list)
-        self.assertIsInstance(t.tc, list)
-        self.assertIsInstance(t.tsr, list)
-        self.assertIsInstance(t.tfm, list)
+        pass
 
     def test_temp_injection(self):
-        t = pti.temp(trajectory, 2)
-        self.assertIsInstance(t.tft, list)
-        self.assertIsInstance(t.tt, list)
-        self.assertIsInstance(t.ta, list)
-        self.assertIsInstance(t.tc, list)
-        self.assertIsInstance(t.tsr, list)
-        self.assertIsInstance(t.tfm, list)
+        pass

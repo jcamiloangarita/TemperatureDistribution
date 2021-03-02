@@ -22,7 +22,7 @@ def create_depth_cells(trajectory, cells_no=None):
         return trajectory.md, trajectory.tvd, depth_step, trajectory.inclination, trajectory.azimuth
 
 
-def set_well(temp_dict, trajectory, operation, cells_no=None):
+def set_well(temp_dict, trajectory, operation):
     q_conv = 60  # from m^3/min to m^3/h
     an_conv = 1 / 1500  # from in^2 to m^2
     diameter_conv = 0.0254  # from in to m
@@ -32,16 +32,13 @@ def set_well(temp_dict, trajectory, operation, cells_no=None):
 
             # DIMENSIONS
             self.trajectory = trajectory
-            self.md, self.tvd, self.depth_step, self.inclination, self.azimuth = create_depth_cells(trajectory,
-                                                                                                    cells_no)
-            self.deltaz = self.depth_step
-            self.cells_no = self.zstep = len(self.md)
             self.casings = temp_dict["casings"]  # casings array
             self.pipe_id = temp_dict["pipe_id"] * diameter_conv  # Drill String Inner  Diameter, m
             self.pipe_od = temp_dict["pipe_od"] * diameter_conv  # Drill String Outer Diameter, m
             # OFFSHORE
             self.water_depth = temp_dict["water_depth"]  # Water Depth, m
-            self.riser_cells = round(self.water_depth / self.depth_step)  # number of grid cells for the riser
+            # number of grid cells for the riser
+            self.riser_cells = len([point for point in trajectory if point['md'] <= self.water_depth])
             self.riser_id = temp_dict["riser_id"] * diameter_conv  # Riser diameter Inner Diameter, m
             self.riser_od = temp_dict["riser_od"] * diameter_conv  # Riser diameter Outer Diameter, m
             self.th_grad_seawater = temp_dict["th_grad_seawater"]  # Seawater thermal grad., °C/cell
@@ -119,8 +116,14 @@ def set_well(temp_dict, trajectory, operation, cells_no=None):
 
             self.sections, self.temp_fm = calc_formation_temp(self)
 
+            self.md = [x['md'] for x in self.trajectory]
+            self.tvd = [x['tvd'] for x in self.trajectory]
+            self.inclination = [x['inc'] for x in self.trajectory]
+            self.azimuth = [x['azi'] for x in self.trajectory]
+            self.dls = [x['dls'] for x in self.trajectory]
             td_obj = td.calc(self,
-                             dimensions={'od_pipe': self.pipe_od, 'id_pipe': self.pipe_id, 'length_pipe': self.md[-1],
+                             dimensions={'od_pipe': self.pipe_od, 'id_pipe': self.pipe_id,
+                                         'length_pipe': self.trajectory[-1]['md'],
                                          'od_annular': self.annular_or * 2},
                              case='static',
                              densities={'rhof': self.rho_fluid, 'rhod': self.rho_pipe},
@@ -141,9 +144,11 @@ def set_well(temp_dict, trajectory, operation, cells_no=None):
 
 def create_system(well):
     section_0, section_1, section_2, section_3, section_4 = [], [], [], [], []
-    for x in range(well.cells_no):
+    depth_base = -1
+    for x in range(len(well.trajectory)):
         initial_dict = {'component': '', 'material': '', 'rho': 2.24, 'tc': '', 'shc': '',
-                        'depth': well.md[x]}
+                        'depth': well.trajectory[x]['md'], 'cellDepth': well.trajectory[x]['md'] - depth_base}
+        depth_base = well.trajectory[x]['md']
         section_0.append(deepcopy(initial_dict))
         section_1.append(deepcopy(initial_dict))
         section_2.append(deepcopy(initial_dict))
@@ -153,8 +158,8 @@ def create_system(well):
     sections_names = ['section_0', 'section_1', 'section_2', 'section_3', 'section_4']
 
     for x, i in zip(sections, sections_names):
-        for y in range(well.cells_no):
-            x[y]['material'] = get_material(i, well.md[y],
+        for y in range(len(well.trajectory)):
+            x[y]['material'] = get_material(i, well.trajectory[y]['md'],
                                             first_casing_depth=well.casings[0, 2],
                                             water_depth=well.water_depth)
             if x[y]['material'] == 'mixture':
@@ -177,7 +182,7 @@ def get_fractions_at_depth(well, cell):
     the_index = -1
     casing_depths = reversed([x[2] for x in well.casings])
     for x in casing_depths:
-        if well.md[cell] > x:
+        if well.trajectory[cell]['md'] > x:
             the_index -= 1
 
     pipe_fraction = well.sr_fractions[the_index][0]
@@ -391,19 +396,19 @@ def calc_heat_transfer_coef(tc, nu, diameter):
 
 def calc_formation_temp(well):
     temp_fm = [well.temp_surface]
-    for j in range(1, well.cells_no):
+    for j in range(1, len(well.trajectory)):
 
         if j <= well.riser_cells:
             th_grad = well.th_grad_seawater  # Water Thermal Gradient for the Riser section
         else:
             th_grad = well.th_grad_fm  # Geothermal Gradient below the Riser section
-        temp_delta = temp_fm[j - 1] + th_grad * (well.tvd[j] - well.tvd[j - 1])
+        temp_delta = temp_fm[j - 1] + th_grad * (well.trajectory[j]['tvd'] - well.trajectory[j - 1]['tvd'])
 
         # Generating the Temperature Profile at t=0
         temp_fm.append(temp_delta)
 
     for x in well.sections:
-        for y in range(well.cells_no):
+        for y in range(len(well.trajectory)):
             x[y]['temp'] = temp_fm[y]
             x[y]['temp_fm'] = temp_fm[y]
 

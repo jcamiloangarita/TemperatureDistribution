@@ -78,7 +78,7 @@ def define_system_section1(well, sections, bit_position):
 
 def define_system_section2(well, sections, bit_position):
     for x, y in enumerate(sections[2][:bit_position+1]):
-        if x < well.cells_no - 1:
+        if x < len(well.trajectory) - 1:
             y['N'] = 0
             y['W'] = - y['comp_W']
             y['C'] = y['comp_time'] + y['comp_E'] + y['comp_W'] + y['comp_N/S']
